@@ -15,6 +15,9 @@
 #include "chainparamsseeds.h"
 
 #include <iostream> // added by The_CodeBreakeR
+using namespace std;
+#include "arith_uint256.h"
+#include "uint256.h"
 
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
@@ -45,7 +48,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * CBlock(hash=000000000019d6, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=4a5e1e, nTime=1231006505, nBits=1d00ffff, nNonce=2083236893, vtx=1)
  *   CTransaction(hash=4a5e1e, ver=1, vin.size=1, vout.size=1, nLockTime=0)
  *     CTxIn(COutPoint(000000, -1), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
- *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
+ *     CTxOut(nValue=40.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B) // changed by The_CodeBreakeR
  *   vMerkleTree: 4a5e1e
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
@@ -53,6 +56,28 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
     const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
     const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+}
+
+/* created by The_CodeBreakeR,
+   in order to create a new proper genesis block with the given initial timestamp and reward
+   notice:
+   1- timestamp of the created genesis block by this function, my differ from the given amount
+   2- this function should be called in CMainParams and assertions should be updated according to the new hashes
+   */
+static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nBits, const CAmount& genesisReward)
+{
+    uint32_t nNonce = 1;
+    bool fNegative;
+    bool fOverflow;
+    arith_uint256 bnTarget;		
+    bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
+
+    do {
+	if(nNonce == 0) nTime++;
+	nNonce++;
+    } while(UintToArith256(CreateGenesisBlock(nTime, nNonce, nBits, 1, genesisReward).GetHash()) > bnTarget);
+
+    return CreateGenesisBlock(nTime, nNonce, nBits, 1, genesisReward);	
 }
 
 void CChainParams::UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout)
@@ -81,7 +106,7 @@ public:
         consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
         consensus.BIP65Height = 388381; // 000000000000000004c2b624ed5d7756c508d90fd0da2c7c679febfa6c4735f0
         consensus.BIP66Height = 363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
-        consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.powLimit = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // changed by The_CodeBreakeR, difficulty decreased
         consensus.nPowTargetTimespan = 24 * 60 * 60; // changed by The_CodeBreakeR, the original value was two weeks
         consensus.nPowTargetSpacing = 5 * 60; // changed by The_CodeBreakeR, the original value was ten minutes
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -120,11 +145,18 @@ public:
         nDefaultPort = 29990; // changed by The_CodeBreakeR, the original value was 8333
         nPruneAfterHeight = 100000;
 
-	// changed by The_CodeBreakeR, the original value of block reward was 50, and the original timestamp was 1231006505	
-        genesis = CreateGenesisBlock(1502794800, 2083236893, 0x1d00ffff, 1, 40 * COIN);
+	/* changed by The_CodeBreakeR,
+	   the original value of block reward was 50,
+	   the original timestamp was 1231006505,
+	   the original value of nBits was 0x1d00ffff and it was changed in order to decrease the difficulty
+	   and the new nonce has set in order to make a proper hash
+	 */
+	genesis = CreateGenesisBlock(1503216430, 171954814, 0x1d0fffff, 1, 40 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-	assert(consensus.hashGenesisBlock == uint256S("0x0faa38b6d54be51f44d54771856dfd0e020d1e3af9a6b263362efec745329ce8")); // changed by The_CodeBreakeR
-        assert(genesis.hashMerkleRoot == uint256S("0xf38e570cde3d7ed2e7982b8ad802eca46f661bb9eb2718f388ce82b71976dde2")); // changed by The_CodeBreakeR
+
+	assert(consensus.hashGenesisBlock == uint256S("0x00000008730095f906f9b77c84e801584f099366d41d4108775d2f98adf47d4a")); // changed by The_CodeBreakeR
+	assert(genesis.hashMerkleRoot == uint256S("0xf38e570cde3d7ed2e7982b8ad802eca46f661bb9eb2718f388ce82b71976dde2")); // changed by The_CodeBreakeR
+
 
         // Note that of those with the service bits flag, most only support a subset of possible options
         vSeeds.emplace_back("seed.bitcoin.sipa.be", true); // Pieter Wuille, only supports x1, x5, x9, and xd
