@@ -14,8 +14,14 @@
 
 #include "chainparamsseeds.h"
 
-#include <iostream> // added by The_CodeBreakeR
+// added by The_CodeBreakeR
+
+#include<string>
+#include<fstream>
+#include <iostream>
+
 using namespace std;
+
 #include "arith_uint256.h"
 #include "uint256.h"
 
@@ -151,12 +157,46 @@ public:
 	   the original value of nBits was 0x1d00ffff and it was changed in order to decrease the difficulty
 	   and the new nonce has set in order to make a proper hash
 	 */
+	/*
 	genesis = CreateGenesisBlock(1503216430, 171954814, 0x1d0fffff, 1, 40 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
 	assert(consensus.hashGenesisBlock == uint256S("0x00000008730095f906f9b77c84e801584f099366d41d4108775d2f98adf47d4a")); // changed by The_CodeBreakeR
 	assert(genesis.hashMerkleRoot == uint256S("0xf38e570cde3d7ed2e7982b8ad802eca46f661bb9eb2718f388ce82b71976dde2")); // changed by The_CodeBreakeR
+	 */
 
+
+
+	/* new mechanism for creating the default or a custom genesis block
+	   created by The_CodeBreakeR
+	   */
+	ifstream fin1("genesis.conf1");
+	uint32_t inputTime, inputReward;
+	bool buildTheOldGenesisBlock; // created by The_CodeBreakeR, determines if the new genesis block should be built from the previous configuration or not
+	fin1 >> inputTime >> inputReward >> buildTheOldGenesisBlock;
+
+	if(buildTheOldGenesisBlock)
+	{
+	    ifstream fin2("genesis.conf2");
+	    uint32_t inputNonce;
+	    string inputHashGenesisBlock, inputHashMerkleRoot;
+	    fin2 >> inputNonce >> inputHashGenesisBlock >> inputHashMerkleRoot;
+
+	    genesis = CreateGenesisBlock(inputTime, inputNonce, 0x1d0fffff, 1, inputReward);
+	    consensus.hashGenesisBlock = genesis.GetHash();
+
+	    assert(consensus.hashGenesisBlock == uint256S(inputHashGenesisBlock));
+	    assert(genesis.hashMerkleRoot == uint256S(inputHashMerkleRoot));
+	}
+
+	else
+	{
+	    genesis = CreateGenesisBlock(inputTime, 0x1d0fffff, inputReward);
+	    consensus.hashGenesisBlock = genesis.GetHash();
+
+	    ofstream fout("genesis.conf2");
+	    fout << genesis.nNonce << endl << consensus.hashGenesisBlock.GetHex() << endl << genesis.hashMerkleRoot.GetHex() << endl;
+	}
 
         // Note that of those with the service bits flag, most only support a subset of possible options
         vSeeds.emplace_back("seed.bitcoin.sipa.be", true); // Pieter Wuille, only supports x1, x5, x9, and xd
