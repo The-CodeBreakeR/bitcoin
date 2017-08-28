@@ -72,18 +72,20 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
    */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nBits, const CAmount& genesisReward)
 {
-    uint32_t nNonce = 1;
     bool fNegative;
     bool fOverflow;
-    arith_uint256 bnTarget;		
+    arith_uint256 bnTarget;
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 
-    do {
-	if(nNonce == 0) nTime++;
-	nNonce++;
-    } while(UintToArith256(CreateGenesisBlock(nTime, nNonce, nBits, 1, genesisReward).GetHash()) > bnTarget);
+    CBlock genesis;    
+    genesis = CreateGenesisBlock(nTime, 1, nBits, 1, genesisReward);
 
-    return CreateGenesisBlock(nTime, nNonce, nBits, 1, genesisReward);	
+    do {
+	if(genesis.nNonce == 0) genesis.nTime++;
+	genesis.nNonce++;
+    } while(UintToArith256(genesis.GetHash()) > bnTarget);
+
+    return genesis;
 }
 
 void CChainParams::UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout)
