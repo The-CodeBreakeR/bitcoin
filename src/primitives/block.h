@@ -72,6 +72,22 @@ public:
 class CBlock : public CBlockHeader
 {
 public:
+     /* created by The_CodeBreakeR,
+	1GB of memory, in order to convert the proof of work into a memory-bound process
+	*/
+    static uint32_t *memorySpace;
+
+    /* created by The_CodeBreakeR,
+       specifies the size of the memory being used
+       should always be a power of 2
+       */
+    static uint32_t memorySize;
+
+    /* created by The_CodeBreakeR,
+       number of steps should be taken to calculate the result for a given input
+       */
+    static uint32_t memorySteps; 
+
     // network and disk
     std::vector<CTransactionRef> vtx;
 

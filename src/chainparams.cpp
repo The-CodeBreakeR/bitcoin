@@ -16,9 +16,10 @@
 
 // added by The_CodeBreakeR
 
-#include<string>
-#include<fstream>
+#include <string>
+#include <fstream>
 #include <iostream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -114,7 +115,7 @@ public:
         consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
         consensus.BIP65Height = 388381; // 000000000000000004c2b624ed5d7756c508d90fd0da2c7c679febfa6c4735f0
         consensus.BIP66Height = 363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
-        consensus.powLimit = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // changed by The_CodeBreakeR, difficulty decreased
+        consensus.powLimit = uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // changed by The_CodeBreakeR, difficulty decreased
         consensus.nPowTargetTimespan = 24 * 60 * 60; // changed by The_CodeBreakeR, the original value was two weeks
         consensus.nPowTargetSpacing = 5 * 60; // changed by The_CodeBreakeR, the original value was ten minutes
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -160,7 +161,7 @@ public:
 	   and the new nonce has set in order to make a proper hash
 	 */
 	/*
-	genesis = CreateGenesisBlock(1503216430, 171954814, 0x1d0fffff, 1, 40 * COIN);
+	genesis = CreateGenesisBlock(1503216430, 171954814, 0x1e00ffff, 1, 40 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
 	assert(consensus.hashGenesisBlock == uint256S("0x00000008730095f906f9b77c84e801584f099366d41d4108775d2f98adf47d4a")); // changed by The_CodeBreakeR
@@ -184,7 +185,7 @@ public:
 	    string inputHashGenesisBlock, inputHashMerkleRoot;
 	    fin2 >> inputNonce >> inputHashGenesisBlock >> inputHashMerkleRoot;
 
-	    genesis = CreateGenesisBlock(inputTime, inputNonce, 0x1d0fffff, 1, inputReward);
+	    genesis = CreateGenesisBlock(inputTime, inputNonce, 0x1e00ffff, 1, inputReward);
 	    consensus.hashGenesisBlock = genesis.GetHash();
 
 	    assert(consensus.hashGenesisBlock == uint256S(inputHashGenesisBlock));
@@ -193,7 +194,7 @@ public:
 
 	else
 	{
-	    genesis = CreateGenesisBlock(inputTime, 0x1d0fffff, inputReward);
+	    genesis = CreateGenesisBlock(inputTime, 0x1e00ffff, inputReward);
 	    consensus.hashGenesisBlock = genesis.GetHash();
 
 	    ofstream fout("genesis.conf2");

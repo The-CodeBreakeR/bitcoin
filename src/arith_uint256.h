@@ -45,6 +45,15 @@ public:
             pn[i] = b.pn[i];
     }
 
+    // added by The_CodeBreakeR, a constructor to create a base_uint from an array
+    base_uint(const uint32_t arr[], int width)
+    {
+        static_assert(BITS/32 > 0 && BITS%32 == 0, "Template parameter BITS must be a positive multiple of 32.");
+
+        for (int i = 0; i < width; i++)
+            pn[i] = arr[i];
+    }
+    
     base_uint& operator=(const base_uint& b)
     {
         for (int i = 0; i < WIDTH; i++)
@@ -252,6 +261,13 @@ public:
     {
         assert(WIDTH >= 2);
         return pn[0] | (uint64_t)pn[1] << 32;
+    }
+
+    // added by The_CodeBreakeR
+    uint32_t GetHigh32() const
+    {
+        assert(WIDTH >= 1);	    
+	return pn[WIDTH-1];
     }
 };
 
